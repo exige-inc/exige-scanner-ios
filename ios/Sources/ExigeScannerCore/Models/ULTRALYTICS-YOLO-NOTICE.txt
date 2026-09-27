@@ -1,0 +1,60 @@
+Ultralytics YOLO weights
+========================
+
+The Ultralytics Enterprise license is signed. These two ONNX files are the
+weights that notice previously held back, and they ship with the libraries:
+
+  npm package @exige/web-scanner-sdk
+    dist/models/yolo11n.onnx
+    dist/models/license-plate-finetune-v1n.onnx
+    Copied from this directory by scripts/copy-ultralytics-models.mjs during
+    npm run build:lib. They sit beside dist/scanner_core.wasm.
+  iOS Swift package ExigeScannerCore
+    ios/Sources/ExigeScannerCore/Models/yolo11n.onnx
+    ios/Sources/ExigeScannerCore/Models/license-plate-finetune-v1n.onnx
+    ScannerWeights.vehicleModelURL and ScannerWeights.plateModelURL
+  Android library :scanner-core
+    assets models/yolo11n.onnx
+    assets models/license-plate-finetune-v1n.onnx
+    The AAR build copies these files from this directory.
+    ScannerWeights.VEHICLE_ASSET and ScannerWeights.PLATE_ASSET
+
+The demo serves the same bytes from /models/. A page load does not fetch
+them. openCamera and startCamera do not. Callers still pass modelUrl.
+setLicenseKey and the other product license checks are unchanged. These
+files are weights, not a substitute for a signed SDK key.
+
+Vehicles
+  file: yolo11n.onnx
+  sha256: 7d8fd1717d9d5bbab6986cd134afb620649c7a394303d55b1e09fc00804cc5c1
+  size: 10720228 bytes
+  what it is: ONNX export of Ultralytics YOLO11n COCO weights.
+  The bytes match the file previously recorded from
+  https://huggingface.co/webnn/yolo11n onnx/yolo11n.onnx.
+  Input [1, 3, 640, 640]. Output [1, 84, 8400]
+  (cx, cy, w, h, then 80 class scores). COCO indexes 2, 3, 5, and 7 are
+  car, motorcycle, bus, and truck. No license-plate class.
+
+Plates
+  file: license-plate-finetune-v1n.onnx
+  sha256: 693133a1db97a3ba1e90068986f80afb72c3fcddb681e57181a89a9a3dc351d6
+  size: 10481682 bytes
+  what it is: YOLOv11n one-class plate fine-tune.
+  The bytes match the file previously recorded from
+  https://huggingface.co/morsetechlab/yolov11-license-plate-detection
+  license-plate-finetune-v1n.onnx.
+  The file stores symbolic dimensions: input [batch, 3, height, width]
+  and output [batch, 5, anchors]. At a 640 input the anchor count is 8400.
+  No vehicle classes.
+
+Demo and package preprocess for both files is letterbox to 640, pad gray
+114, RGB divided by 255, layout yolov8. Neither file is a combined
+vehicle-and-plate model. Plate text stays the Apache-2.0 reader
+plate-text.onnx.
+
+The Apache-2.0 YOLOX files in this directory stay the unlicensed fallback.
+This change does not add them to the npm package:
+
+  yolox-tiny-coco.onnx
+  plate-yolox-nano.onnx
+  plate-text.onnx
